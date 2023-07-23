@@ -5,30 +5,48 @@
 , sbsigntool
 , makeRustPlatform
 , rustPlatform
-, rustc
+, rust
 , cargo
 , fetchFromGitHub
-, lanzaboote-stub
 , lib
-, mkStdenvNoLibs
+, lanzaboote-stub
+, uefiStdenv
+, pkgsBuildTarget
+, buildPackages
+, overrideCC
+, writeShellScriptBin
 }:
 let
   uefiPlatform = lib.systems.elaborate "${stdenv.hostPlatform.qemuArch}-windows" // {
     rustc.config = "${stdenv.hostPlatform.qemuArch}-unknown-uefi";
+    useLLVM = true;
   };
-  uefiStdenv = mkStdenvNoLibs (stdenv.override (old: {
-    hostPlatform = uefiPlatform;
-    targetPlatform = uefiPlatform;
+  uefiLinker = writeShellScriptBin "lld-link" ''
+    exec ${buildPackages.llvmPackages_latest.lld}/bin/lld-link "$@"
+    '';
 
-    # cc = buildPackages.llvmPackages.clang;
-  }));
-  uefiRustc = rustc.override {
-    stdenv = uefiStdenv;
+  uefiBintools = buildPackages.llvmPackages_15.clang.bintools.override {
+    extraBuildCommands = ''
+      wrap lld-link ${../../../build-support/bintools-wrapper/ld-wrapper.sh} ${uefiLinker}/bin/lld-link
+    '';
   };
+
+  uefiCC = buildPackages.llvmPackages_latest.clang; #.override {
+ #   bintools = uefiBintools;
+ # };
+
+  hostUefiStdenv = overrideCC (stdenv.override (old: {
+    targetPlatform = uefiPlatform;
+  })) uefiCC;
+
+  hostUefiRust = rust.override {
+    stdenv = hostUefiStdenv;
+    pkgsBuildTarget = pkgsBuildTarget // { targetPackages.stdenv = hostUefiStdenv; };
+  };
+
   uefiRustPlatform = makeRustPlatform {
     stdenv = uefiStdenv;
-    rustc = uefiRustc;
-    inherit cargo;
+    inherit (hostUefiRust.packages.stable) rustc cargo;
   };
 in
 rustPlatform.buildRustPackage rec {
@@ -65,9 +83,14 @@ rustPlatform.buildRustPackage rec {
     sbsigntool
   ];
 
-  passthru.stub = (lanzaboote-stub.override {
-    rustPlatform = uefiRustPlatform;
-  });
+  passthru = {
+    stub = (lanzaboote-stub.override {
+      rustPlatform = uefiRustPlatform;
+      uefiLinker = uefiLinker;
+    });
+    inherit hostUefiStdenv hostUefiRust;
+  };
+
 
   meta = with lib; {
     description = "Lanzaboote UEFI tooling for SecureBoot enablement on NixOS systems";
