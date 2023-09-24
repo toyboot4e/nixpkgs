@@ -27,14 +27,14 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "cairo";
-  version = "1.17.9-unstable-2023-09-07";
+  version = "1.18.0";
 
   src = fetchFromGitLab {
     domain = "gitlab.freedesktop.org";
     owner = "cairo";
     repo = "cairo";
-    rev = "7380d3dd7d5128db20f0be063b086519ed555327";
-    hash = "sha256-DE/YYwl1Zkr34BMKzjz4apXVEc2fli3f4/ZmXagQHJc=";
+    rev = finalAttrs.version;
+    hash = "sha256-EN5TW31j/nRjcJXTI+QzCszFZNJVvYCe8qUji+aW/zQ=";
   };
 
   outputs = [ "out" "dev" "devdoc" ];
