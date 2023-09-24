@@ -58,7 +58,7 @@ stdenv.mkDerivation rec {
   meta = with lib; {
     description = "Dock/panel library for GTK 4";
     homepage = "https://gitlab.gnome.org/GNOME/libpanel";
-    license = licenses.lgpl21Plus;
+    license = licenses.lgpl3Plus;
     maintainers = teams.gnome.members;
     platforms = platforms.unix;
   };
