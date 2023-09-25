@@ -21,6 +21,7 @@
 , libpanel
 , libpeas2
 , libportal-gtk4
+, libsysprof-capture
 , libxml2
 , meson
 , ninja
@@ -94,12 +95,12 @@ stdenv.mkDerivation rec {
     libadwaita
     libdex
     libpanel
+    libsysprof-capture
     libxml2
     ostree
     d-spy
     pcre2
     python3
-    sysprof
     template-glib
     vala
     webkitgtk_6_0
@@ -142,6 +143,8 @@ stdenv.mkDerivation rec {
     buildPythonPath "$out $pythonPath"
     gappsWrapperArgs+=(
       --prefix PYTHONPATH : "$program_PYTHONPATH"
+      # For sysprof-agent
+      --prefix PATH : "${sysprof}/bin"
     )
 
     # Ensure that all plugins get their interpreter paths fixed up.
