@@ -85,13 +85,19 @@ stdenv.mkDerivation (finalAttrs: {
     # The meson-cc-tests/ipc_rmid_deferred_release.c test program
     # won't do its job when cross compiling.
     let
-      crossFile = writeText "cross-file.conf" ''
-        [properties]
-        ipc_rmid_deferred_release = 'false'
-      '';
+      ipc_rmid_deferred_release = {
+        darwin = "false";
+        freebsd = "true";
+        linux = "true";
+        netbsd = "false";
+      }.${stdenv.hostPlatform.parsed.kernel.name} or
+        (throw "Unknown value for ipc_rmid_deferred_release");
     in
-    lib.optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
-      "--cross-file=${crossFile}"
+    lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+      "--cross-file=${builtins.toFile "cross-file.conf" ''
+      [properties]
+      ipc_rmid_deferred_release = ${ipc_rmid_deferred_release}
+    ''}"
     ]
   );
 
@@ -115,7 +121,7 @@ stdenv.mkDerivation (finalAttrs: {
     '';
     homepage = "http://cairographics.org/";
     license = with licenses; [ lgpl2Plus mpl10 ];
-    pkgConfigModules = [ "cairo-ps" "cairo-svg" "cairo-gobject" ];
+    pkgConfigModules = [ "cairo-ps" "cairo-svg" "cairo-gobject" "cairo-pdf" ];
     platforms = platforms.all;
   };
 })
