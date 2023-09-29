@@ -67,7 +67,7 @@ in
         version = rustcVersion;
         sha256 = rustcSha256;
         inherit enableRustcDev;
-        inherit llvmShared llvmSharedForBuild llvmSharedForHost llvmSharedForTarget llvmPackages fastCross;
+        inherit llvmShared llvmSharedForBuild llvmSharedForHost llvmSharedForTarget llvmPackages fastCross stdenv;
 
         patches = rustcPatches;
 
@@ -82,7 +82,9 @@ in
         # Use boot package set to break cycle
         rustPlatform = bootRustPlatform;
         inherit CoreFoundation Security;
-      } else self.callPackage ./cargo_cross.nix {};
+      } else self.callPackage ./cargo_cross.nix { 
+        inherit stdenv;
+      };
       cargo-auditable = self.callPackage ./cargo-auditable.nix { };
       cargo-auditable-cargo-wrapper = self.callPackage ./cargo-auditable-cargo-wrapper.nix { };
       clippy = self.callPackage ./clippy.nix {
