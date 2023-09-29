@@ -20511,6 +20511,22 @@ with pkgs;
 
   uefi-firmware-parser = callPackage ../development/tools/analysis/uefi-firmware-parser { };
 
+  uefiStdenv =
+  let
+    uefiPlatform = lib.systems.elaborate "${stdenv.hostPlatform.qemuArch}-windows" // {
+      rustc.config = "${stdenv.hostPlatform.qemuArch}-unknown-uefi";
+      useLLVM = true;
+    };
+  in
+  lowPrio
+    (overrideCC
+      (stdenv.override {
+        hostPlatform = uefiPlatform;
+        targetPlatform = uefiPlatform;
+      })
+      buildPackages.llvmPackages_latest.clang
+    );
+
   uhd3_5 = callPackage ../applications/radio/uhd/3.5.nix { };
   uhd = callPackage ../applications/radio/uhd { };
 
