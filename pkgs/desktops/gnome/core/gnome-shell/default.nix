@@ -209,7 +209,6 @@ stdenv.mkDerivation rec {
   postFixup = ''
     # The services need typelibs.
     for svc in org.gnome.ScreenSaver org.gnome.Shell.Extensions org.gnome.Shell.Notifications org.gnome.Shell.Screencast; do
-      chmod +x $out/share/gnome-shell/$svc
       wrapGApp $out/share/gnome-shell/$svc
     done
   '';
