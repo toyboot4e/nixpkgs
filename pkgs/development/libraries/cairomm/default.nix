@@ -3,9 +3,9 @@
 , lib
 , pkg-config
 , darwin
+, boost
 , cairo
 , fontconfig
-, freetype
 , libsigcxx
 , meson
 , ninja
@@ -29,8 +29,8 @@ stdenv.mkDerivation rec {
   ];
 
   buildInputs = [
+    boost # for tests
     fontconfig
-    freetype
   ] ++ lib.optionals stdenv.isDarwin (with darwin.apple_sdk.frameworks; [
     ApplicationServices
   ]);
@@ -40,7 +40,16 @@ stdenv.mkDerivation rec {
     libsigcxx
   ];
 
-  doCheck = true;
+  mesonFlags = [
+    "-Dbuild-tests=true"
+  ];
+
+  # Meson is no longer able to pick up Boost automatically.
+  # https://github.com/NixOS/nixpkgs/issues/86131
+  BOOST_INCLUDEDIR = "${lib.getDev boost}/include";
+  BOOST_LIBRARYDIR = "${lib.getLib boost}/lib";
+
+  doCheck = !stdenv.isDarwin;
 
   meta = with lib; {
     description = "C++ bindings for the Cairo vector graphics library";
