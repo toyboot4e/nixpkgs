@@ -42,7 +42,6 @@ stdenv.mkDerivation rec {
 
   mesonFlags = [
     "-Dbuild-tests=true"
-    "-Dboost-shared=true"
   ];
 
   # Meson is no longer able to pick up Boost automatically.
