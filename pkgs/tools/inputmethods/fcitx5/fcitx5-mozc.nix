@@ -1,4 +1,4 @@
-{ lib, clangStdenv, fetchFromGitHub, fetchurl, fetchpatch
+{ lib, clangStdenv, fetchFromGitHub, fetchurl, fetchpatch, makeDesktopItem,
 , python3Packages, ninja, pkg-config, protobuf, zinnia, qt5, fcitx5
 , jsoncpp, gtest, which, gtk2, unzip, abseil-cpp, breakpad, nixosTests }:
 let
@@ -22,6 +22,14 @@ let
     url =
       "https://osdn.net/projects/ponsfoot-aur/storage/mozc/x-ken-all-${zipcode_rel}.zip";
     sha256 = "ExS0Cg3rs0I9IOVbZHLt8UEfk8/LmY9oAHPVVlYuTPw=";
+  };
+  desktopItem = makeDesktopItem {
+    desktopName = "mozc_tools";
+    genericName = "IME configurator";
+    categories = [ "IME" ];
+    exec = "mozc_tool";
+    # icon = "mozc_tool-desktop";
+    name = "mozc_tool-desktop";
   };
 
 in clangStdenv.mkDerivation {
@@ -107,6 +115,9 @@ in clangStdenv.mkDerivation {
     install -d $out/share/fcitx5/inputmethod
     install -d $out/lib/fcitx5
     ../scripts/install_fcitx5
+    # Create .desktop file.
+    cp "${desktopItem}/share/applications/hakuneko-desktop.desktop" \
+       "$out/share/applications/mozc_tool.desktop"
 
     runHook postInstall
   '';
