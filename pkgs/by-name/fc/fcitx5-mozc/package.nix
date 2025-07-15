@@ -123,6 +123,12 @@ buildBazelPackage {
         ln -s $prefix_$name $path/fcitx_mozc_$name
       done
 
+      # create a desktop file
+      mkdir -p $out/share/applications
+      cp ${./fcitx5-mozc-jp.desktop} $out/share/applications/fcitx5-mozc-jp.desktop
+      substituteInPlace $out/share/applications/fcitx5-mozc-jp.desktop \
+        --replace-fail "@mozc@" "${mozc.out}"
+
       runHook postInstall
     '';
   };
